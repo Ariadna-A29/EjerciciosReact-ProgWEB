@@ -1,40 +1,54 @@
-import { useState } from "react";
-import Reloj from "./components/Reloj";
-import ContadorRenders from "./components/ContadorRenders";
-import Ficha from "./components/Ficha";
-import ContadorDeVisitas from "./components/ContadorVisitas";
-import ContadorDeCafes from "./components/ContadorCafe";
+import { useEffect, useState } from "react";
+import "./App.css";
+import { useEffect } from "react";
+
+const URL = "https://api.github.com/users/Ariadna-A29";
 
 function App() {
-  const [mostrarReloj, setMostrarReloj] = useState(true);
+  const [datos, setDatos] = useState(null);
+  const [error, setError] = useState(null);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    async function traerPerfil() {
+      try {
+        const respuesta = await fetch(URL);
+        if (!respuesta.ok) {
+          throw new Error(`Error ${respuesta.status}`);
+        }
+        const perfil = await respuesta.json();
+        console.log(perfil);
+        setDatos(perfil);
+      } catch (error) {
+        console.log(error);
+        setError(error.message);
+      } finally {
+        setCargando(false);
+      }
+    }
+    traerPerfil();
+  }, []);
+
+  if (cargando) {
+  return <p>Cargando...</p>
+  }
+
+  if (error) {
+    return <p>Error {error}</p>
+  }
 
   return (
     <>
-      <h1>Ejercicio 1</h1>
-
-      <button onClick={() => setMostrarReloj(!mostrarReloj)}>
-        {mostrarReloj ? "Esconder reloj" : "Mostrar reloj"}
-      </button>
-
-      {mostrarReloj && <Reloj />}
-
-      <h1>Ejercicio 2</h1>
-
-      <ContadorRenders />
-
-      <h1>Ejercicio 3</h1>
-
-      <Ficha
-        nombre="Ariadna"
-        rol="Desarrolladora"
+      <h1>Fetching Data</h1>
+      <h2>lista usuarios</h2>
+      <img
+        src={datos.avatar_url}
+        alt={`Foto de ${datos.name} || ${datos.login}`}
+        width={"150px"}
       />
-
-      <h1>Ejercicio 4</h1>
-
-      <ContadorDeVisitas />
-      <ContadorDeCafes />
+      <h3>{datos?.name}</h3>
+      <p>Repositorios publicos: {datos.public_repos}</p>
     </>
   );
 }
-
 export default App;
